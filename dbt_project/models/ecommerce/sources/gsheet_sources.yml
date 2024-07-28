@@ -4,6 +4,9 @@ sources:
     - name: airbyte
       tables:
           - name: _airbyte_raw_users
+            meta:
+              dagster:
+                asset_key: ["users"]
             description: 'Simulated user data from the GSheet connector.'
             columns:
                 - name: _airbyte_ab_id
@@ -11,6 +14,9 @@ sources:
                 - name: _airbyte_emitted_at
 
           - name: _airbyte_raw_products
+            meta:
+              dagster:
+                asset_key: ["products"]
             description: 'Simulated product data from the GSheet connector.'
             columns:
                 - name: _airbyte_ab_id
@@ -18,6 +24,9 @@ sources:
                 - name: _airbyte_emitted_at
 
           - name: _airbyte_raw_purchases
+            meta:
+              dagster:
+                asset_key: ["purchases"]
             description: 'Simulated purchase data from the GSheet connector.'
             columns:
                 - name: _airbyte_ab_id
