@@ -1,9 +1,8 @@
 # Airbyte-dbt-Dagster-Teradata Integration
 
-Welcome to the "Airbyte-dbt-Dagster-Teradata Integration" repository! This repo provides a quickstart template for building a full data stack using Airbyte, Dagster, dbt, and Teradata. Easily extract sample data from "Sample Data (Faker)" and load it into Teradata using Airbyte, and apply necessary transformations using dbt, all orchestrated seamlessly with Dagster. While this template doesn't delve into specific data or transformations, its goal is to showcase the synergy of these tools.
+Welcome to the "Airbyte-dbt-Dagster-Teradata Integration" tutorial! This tutorial offers a quick start template for constructing a complete data stack utilizing Airbyte, Dagster, dbt, and Teradata Vantage. With this template, you can effortlessly extract sample data from "Sample Data (Faker)" and load it into Teradata Vantage using Airbyte, perform necessary transformations using dbt-teradata, and seamlessly orchestrate everything with Dagster. 
 
-This quickstart is designed to minimize setup hassles and propel you forward.
-
+While this template does not dive into specific data or transformations, it aims to demonstrate the powerful combination of these tools with Teradata Vantage. This quick start is designed to simplify setup and accelerate your progress. 
 ## Table of Contents
 
 
@@ -18,7 +17,8 @@ This quickstart is designed to minimize setup hassles and propel you forward.
   - [Next Steps](#next-steps)
 
 ## Infrastructure Layout
-![insfrastructure layout](images/dad_teradata_stack.png)
+
+![insfrastructure layout](images/infra.png)
 
 ## Pipeline DAG
 ![pipeline dag](images/dag.png)
@@ -29,15 +29,19 @@ Before you embark on this integration, ensure you have the following set up and 
 
 1. **Python 3.10 or later**: If not installed, download and install it from [Python's official website](https://www.python.org/downloads/).
 
-3. **Airbyte OSS version**: Deploy the open-source version of Airbyte. Follow the installation instructions from the [Airbyte Documentation](https://docs.airbyte.com/quickstart/deploy-airbyte/).
+2. **Airbyte OSS version**: Deploy the open-source version of Airbyte. Follow the installation instructions from the [Airbyte Documentation](https://medium.com/teradata/manage-elt-pipelines-with-code-using-terraforms-airbyte-provider-e79378fdf127).
+    <br><br>
+In this example, we use Airbyte to load sample data into Teradata Vantage before applying transformations. In Airbyte, we utilize the "Sample Data (Faker)" connector as the source and the Teradata Vantage connector as the destination.     
+
+    ![airbyte](images/airbyte.png)
 
 ## 1. Setting an environment for your project
 
 Get the project up and running on your local machine by following these steps:
 
-1. **Clone the repository (Clone only this quickstart)**:  
+1. **Clone the repository**:  
    ```bash
-   git clone https://github.com/tallamohan/airbyte_dbt_dagster_teradata
+   git clone https://github.com/teradata/airbyte_dbt_dagster_teradata
    ```
    
 2. **Navigate to the directory**:  
@@ -51,17 +55,26 @@ Get the project up and running on your local machine by following these steps:
      python3 -m venv venv
      source venv/bin/activate
      ```
-   - For Windows:
-     ```bash
-     python -m venv venv
-     .\venv\Scripts\activate
-     ```
+     - For Windows:
+       ```bash
+       python -m venv venv
+       .\venv\Scripts\activate
+       ```
 
 4. **Install Dependencies**:  
    ```bash
    pip install -e ".[dev]"
    ```
+   This will install below pip modules and its dependencies: 
 
+   ```commandline
+   dbt-teradata==1.8.0
+   dbt-core
+   dagster==1.7.9
+   dagster-webserver==1.7.9
+   dagster-dbt==0.23.9
+   dagster-airbyte==0.23.9
+   ```
 ## 2. Setting Up the dbt Project
 
 [dbt (data build tool)](https://www.getdbt.com/) allows you to transform your data by writing, documenting, and executing SQL workflows. Setting up the dbt project requires specifying connection details for your data platform, in this case, Teradata. Here’s a step-by-step guide to help you set this up:
@@ -75,11 +88,22 @@ Get the project up and running on your local machine by following these steps:
 
 2. **Update Connection Details**:
 
-   You'll find a `profiles.yml` file within the directory. This file contains configurations for dbt to connect with your data platform. Update this file with your Teradata connection details.
+   You will find a `profiles.yml` file within the directory. This file contains configurations for dbt to connect with Teradata Vantage. Update this file with your connection details.
 
-3. **Utilize Environment Variables (Optional but Recommended)**:
 
-   To keep your credentials secure, you can leverage environment variables. An example is provided within the `profiles.yml` file.
+3. **Linking Sources in dbt with Assets in Airbyte (Optional)**:
+
+   To link sources in dbt with the assets in Airbyte, you can use the following configuration in `sources.yml`
+
+   ```bash
+   sources:
+   - name: airbyte
+     tables:
+       - name: _airbyte_raw_users
+         meta:
+           dagster:
+             asset_key: ["users"]
+   ```
 
 4. **Test the Connection**:
 
@@ -92,7 +116,7 @@ Get the project up and running on your local machine by following these steps:
 
 ## 3. Orchestrating with Dagster
 
-[Dagster](https://dagster.io/) is a modern data orchestrator designed to help you build, test, and monitor your data workflows. In this section, we'll walk you through setting up Dagster to oversee both the Airbyte and dbt workflows:
+[Dagster](https://dagster.io/) is a modern data orchestrator designed to help you build, test, and monitor your data workflows. In this section, we will walk you through setting up Dagster to oversee both the Airbyte and dbt workflows:
 
 1. **Navigate to the Orchestration Directory**:
 
@@ -120,14 +144,14 @@ Get the project up and running on your local machine by following these steps:
 
    Open your browser and navigate to:
    ```
-   http://127.0.0.1:3000
+   http://127.0.0.1:8000
    ```
 
    Here, you should see assets for both Airbyte and dbt. To get an overview of how these assets interrelate, click on "view global asset lineage". This will give you a clear picture of the data lineage, visualizing how data flows between the tools.
 
 ## Next Steps
 
-Once you've set up and launched this initial integration, the real power lies in its adaptability and extensibility. Here’s a roadmap to help you customize and harness this project tailored to your specific data needs:
+Once you have set up and launched this initial integration, the real power lies in its adaptability and extensibility. Here’s a roadmap to help you customize and harness this project tailored to your specific data needs:
 
 1. **Create dbt Sources for Airbyte Data**:
 
@@ -143,4 +167,13 @@ Once you've set up and launched this initial integration, the real power lies in
 
 4. **Extend the Project**:
 
-   The real beauty of this integration is its extensibility. Whether you want to add more data sources, integrate additional tools, or enhance your transformation logic – the floor is yours. With the foundation set, sky's the limit for how you want to extend and refine your data processes.
+   The real beauty of this integration is its extensibility. Whether you want to add more data sources, integrate additional tools, or enhance your transformation logic – the floor is yours. With the foundation set, sky is the limit for how you want to extend and refine your data processes.
+
+### References:
+
+#### To learn more, check out:
+* [dbt with Teradata Vantage](https://quickstarts.teradata.com/dbt.html)
+* [Tutorial: Using dbt with Dagster](https://docs.dagster.io/integrations/dbt/using-dbt-with-dagster)
+* [Understand the Python code in your Dagster project](https://docs.dagster.io/integrations/dbt/using-dbt-with-dagster/load-dbt-models#step-4-understand-the-python-code-in-your-dagster-project)
+* [Transform data Loaded with Airbyte using dbt](https://quickstarts.teradata.com/elt/transforming-external-data-loaded-via-airbyte-in-teradata-vantage-using-dbt.html)
+* [Manage ELT pipelines with code using Airbyte’s Terraform provider](https://medium.com/teradata/manage-elt-pipelines-with-code-using-terraforms-airbyte-provider-e79378fdf127)
